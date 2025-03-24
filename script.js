@@ -27,9 +27,8 @@ class Entidade {
         this.altura = altura;
     }
     
-    // Método desenhar padrão (pode ser sobrescrito)
     desenhar() {
-        ctx.fillStyle = 'gray'; // Cor padrão
+        ctx.fillStyle = 'gray'; 
         ctx.fillRect(this.x, this.y, this.largura, this.altura);
     }
 }
@@ -49,10 +48,21 @@ class Cobra extends Entidade {
         } else if (teclasPressionadas.KeyD) {
             this.x += 7;
         }
+
+        if (
+            this.x < 0 || 
+            this.x + this.largura > canvas.width || 
+            this.y < 0 || 
+            this.y + this.altura > canvas.height
+        ) {
+            return true; 
+        }
+
+        return false; 
     }
     
     desenhar() {
-        ctx.fillStyle = 'green'; // Cor da cobra
+        ctx.fillStyle = 'green'; 
         ctx.fillRect(this.x, this.y, this.largura, this.altura);
     }
     
@@ -68,8 +78,8 @@ class Cobra extends Entidade {
     }
     
     #houveColisao(comida) {
-        comida.x = Math.random() * (canvas.width - 20); // Corrige o limite
-        comida.y = Math.random() * (canvas.height - 20); // Corrige o limite
+        comida.x = Math.random() * (canvas.width - 20); 
+        comida.y = Math.random() * (canvas.height - 20); 
     }
 }
 
@@ -79,7 +89,7 @@ class Comida extends Entidade {
     }
     
     desenhar() {
-        ctx.fillStyle = 'red'; // Cor da comida
+        ctx.fillStyle = 'red'; 
         ctx.fillRect(this.x, this.y, this.largura, this.altura);
     }
 }
@@ -87,12 +97,30 @@ class Comida extends Entidade {
 const cobra = new Cobra(100, 200, 20, 20);
 const comida = new Comida();
 
+let gameOver = false; 
+
+function exibirGameOver() {
+    ctx.fillStyle = 'white';
+    ctx.font = '30px Arial';
+    ctx.fillText('Game Over', canvas.width / 2 - 100, canvas.height / 2);
+}
+
 function loop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    if (gameOver) {
+        exibirGameOver();
+        return; 
+    }
+
     cobra.desenhar();
-    cobra.atualizar();
+    if (cobra.atualizar()) { 
+        gameOver = true; 
+    }
+    
     comida.desenhar();
     cobra.verificarColisao(comida);
+    
     requestAnimationFrame(loop);
 }
 
