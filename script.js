@@ -26,9 +26,9 @@ class Entidade {
         this.largura = largura;
         this.altura = altura;
     }
-    
+
     desenhar() {
-        ctx.fillStyle = 'gray'; 
+        ctx.fillStyle = 'gray';
         ctx.fillRect(this.x, this.y, this.largura, this.altura);
     }
 }
@@ -40,21 +40,16 @@ class Cobra extends Entidade {
     
     atualizar() {
         if (teclasPressionadas.KeyW) {
-            this.y -= 7;
+            this.y -= 5;
         } else if (teclasPressionadas.KeyS) {
-            this.y += 7;
+            this.y += 5;
         } else if (teclasPressionadas.KeyA) {
-            this.x -= 7;
+            this.x -= 5;
         } else if (teclasPressionadas.KeyD) {
-            this.x += 7;
+            this.x += 5;
         }
 
-        if (
-            this.x < 0 || 
-            this.x + this.largura > canvas.width || 
-            this.y < 0 || 
-            this.y + this.altura > canvas.height
-        ) {
+        if (this.x < 0 || this.x + this.largura > canvas.width || this.y < 0 || this.y + this.altura > canvas.height) {
             return true; 
         }
 
@@ -62,7 +57,7 @@ class Cobra extends Entidade {
     }
     
     desenhar() {
-        ctx.fillStyle = 'green'; 
+        ctx.fillStyle = 'green';
         ctx.fillRect(this.x, this.y, this.largura, this.altura);
     }
     
@@ -78,8 +73,13 @@ class Cobra extends Entidade {
     }
     
     #houveColisao(comida) {
-        comida.x = Math.random() * (canvas.width - 20); 
-        comida.y = Math.random() * (canvas.height - 20); 
+        comida.x = Math.random() * (canvas.width - comida.largura);
+        comida.y = Math.random() * (canvas.height - comida.altura);
+        pontuacao++; 
+        if (pontuacao > pontuacaoMaxima) { 
+            pontuacaoMaxima = pontuacao;
+            localStorage.setItem('pontuacaoMaxima', pontuacaoMaxima);  
+        }
     }
 }
 
@@ -89,25 +89,37 @@ class Comida extends Entidade {
     }
     
     desenhar() {
-        ctx.fillStyle = 'red'; 
+        ctx.fillStyle = 'red';
         ctx.fillRect(this.x, this.y, this.largura, this.altura);
     }
 }
 
-const cobra = new Cobra(100, 200, 20, 20);
-const comida = new Comida();
-
-let gameOver = false; 
+let pontuacao = 0;
+let pontuacaoMaxima = localStorage.getItem('pontuacaoMaxima') ? parseInt(localStorage.getItem('pontuacaoMaxima')) : 0; // Carrega a pontuação máxima do localStorage
+let gameOver = false;
 
 function exibirGameOver() {
     ctx.fillStyle = 'white';
     ctx.font = '30px Arial';
     ctx.fillText('Game Over', canvas.width / 2 - 100, canvas.height / 2);
+    ctx.fillText(`Pontuação Final: ${pontuacao}`, canvas.width / 2 - 120, canvas.height / 2 + 40);
+    ctx.fillText(`Pontuação Máxima: ${pontuacaoMaxima}`, canvas.width / 2 - 120, canvas.height / 2 + 80);
 }
+
+function exibirPontuacao() {
+    ctx.fillStyle = 'white';
+    ctx.font = '20px Arial';
+    const pontuacaoTexto = `Pontuação: ${pontuacao} | Pontuação Máxima: ${pontuacaoMaxima}`;
+    const textWidth = ctx.measureText(pontuacaoTexto).width;
+    ctx.fillText(pontuacaoTexto, (canvas.width - textWidth) / 2, 30); // Centraliza a pontuação
+}
+
+const cobra = new Cobra(100, 200, 20, 20);
+const comida = new Comida();
 
 function loop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     if (gameOver) {
         exibirGameOver();
         return; 
@@ -120,7 +132,8 @@ function loop() {
     
     comida.desenhar();
     cobra.verificarColisao(comida);
-    
+    exibirPontuacao();
+
     requestAnimationFrame(loop);
 }
 
